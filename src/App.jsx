@@ -4,12 +4,26 @@ import axios from "axios";
 
 function App() {
   const [allCurrencies, setCurrencies] = useState(null);
+  const [curr, setCurr] = useState(null);
+  const [baseCurr, setBase] = useState(null);
+  const [result, setResult] = useState("");
+  const [times, setTimes] = useState("");
 
   const getCurrencies = async () => {
     const allCurrencies = await axios.get(
-      "https://api.freecurrencyapi.com/v1/currencies?apikey=APIKEY"
+      `https://api.freecurrencyapi.com/v1/currencies?apikey=${API_KEY}`
     );
     setCurrencies(allCurrencies);
+    // console.log(allCurrencies.data.data.TRY);
+  };
+
+  const convertCurrency = async () => {
+    const currency = await axios.get(`
+      https://api.freecurrencyapi.com/v1/latest?apikey=${API_KEY}&currencies=${curr}&base_currency=${baseCurr}
+    `);
+    const response = currency.data.data;
+    const total = Object.values(response)[0] * times;
+    setResult(total.toFixed(2));
   };
 
   useEffect(() => {
@@ -32,11 +46,17 @@ function App() {
       </header>
       <section className="mt-5">
         <div className="container">
-          <form action="">
+          <form action="#">
             <div className="row d-flex align-items-center justify-content-center">
               <div className="col-ms-12 col-md-4">
                 <div className="form-group">
-                  <select className="form-control">
+                  <select
+                    className="form-control"
+                    onChange={(e) => {
+                      setBase(e.target.value);
+                    }}
+                  >
+                    <option value="">Select Currency</option>
                     {allCurrencies ? (
                       Object.values(allCurrencies.data.data).map((c, i) => (
                         <option key={i} value={c.code}>
@@ -56,17 +76,31 @@ function App() {
                     type="number"
                     placeholder="0"
                     className="form-control"
+                    onChange={(e) => {
+                      setTimes(Number(e.target.value));
+                    }}
                   />
                 </div>
               </div>
               <div className="col-ms-12 col-md-2">
                 <div className="form-group">
-                  <input type="number" className="form-control" disabled />
+                  <input
+                    type="number"
+                    className="form-control"
+                    disabled
+                    value={result}
+                  />
                 </div>
               </div>
               <div className="col-ms-12 col-md-4">
                 <div className="form-group">
-                  <select className="form-control">
+                  <select
+                    className="form-control"
+                    onChange={(e) => {
+                      setCurr(e.target.value);
+                    }}
+                  >
+                    <option value="">Select base</option>
                     {allCurrencies ? (
                       Object.values(allCurrencies.data.data).map((c, i) => (
                         <option key={i} value={c.code}>
@@ -82,7 +116,10 @@ function App() {
             </div>
             <div className="row d-flex align-items-center justify-content-center">
               <div className="col-4 d-flex align-items-center justify-content-center">
-                <button className="btn btn-primary" type="submit">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => convertCurrency()}
+                >
                   Convert
                 </button>
               </div>
