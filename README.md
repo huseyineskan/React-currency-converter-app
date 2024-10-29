@@ -10,4 +10,4 @@ It is a React application that can convert between 33 different currencies using
 
 ## Screenshot
 
-![Uygulama Ekran Görüntüsü](https://github.com/huseyineskan/React-currency-converter-app/blob/main/src/assets/currencies-app.webm)
+![Uygulama Ekran Görüntüsü](https://github.com/huseyineskan/React-currency-converter-app/blob/main/src/assets/currencies-app.mp4)
