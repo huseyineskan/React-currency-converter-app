@@ -3,27 +3,48 @@ import "./App.css";
 import axios from "axios";
 
 function App() {
-  const [allCurrencies, setCurrencies] = useState(null);
+  const [allCurrencies, setAllCurrencies] = useState(null);
   const [curr, setCurr] = useState(null);
+  const [inputCurr, setInputCurr] = useState(1);
   const [baseCurr, setBase] = useState(null);
   const [result, setResult] = useState("");
-  const [times, setTimes] = useState("");
+  const [times, setTimes] = useState(1);
+  const [message, setMessage] = useState(
+    "Please make a selection for currency conversion."
+  );
+  const [isError, setIsError] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const cssClass = isError
+    ? "text-danger"
+    : isSuccess
+    ? "text-success"
+    : "text";
+
+  const API_KEY = "YOUR_API_KEY";
 
   const getCurrencies = async () => {
     const allCurrencies = await axios.get(
       `https://api.freecurrencyapi.com/v1/currencies?apikey=${API_KEY}`
     );
-    setCurrencies(allCurrencies);
-    // console.log(allCurrencies.data.data.TRY);
+    setAllCurrencies(allCurrencies);
   };
 
   const convertCurrency = async () => {
-    const currency = await axios.get(`
-      https://api.freecurrencyapi.com/v1/latest?apikey=${API_KEY}&currencies=${curr}&base_currency=${baseCurr}
-    `);
-    const response = currency.data.data;
-    const total = Object.values(response)[0] * times;
-    setResult(total.toFixed(2));
+    if (curr && baseCurr) {
+      const currency = await axios.get(`
+        https://api.freecurrencyapi.com/v1/latest?apikey=${API_KEY}&currencies=${curr}&base_currency=${baseCurr}
+      `);
+      const response = currency.data.data;
+      const total = Object.values(response)[0] * inputCurr;
+      setResult(total.toFixed(2));
+      setMessage("Good!");
+      setIsSuccess(true);
+      setIsError(false);
+    } else {
+      setMessage("Please make a selection for mandatory fields.");
+      setIsSuccess(false);
+      setIsError(true);
+    }
   };
 
   useEffect(() => {
@@ -32,7 +53,7 @@ function App() {
 
   return (
     <>
-      <header className="p-3 bg-dark text-white">
+      <header className="p-3 bg-dark text-white border-bottom">
         <div className="container">
           <div className="d-flex flex-wrap align-items-center justify-content-center">
             <a
@@ -44,10 +65,28 @@ function App() {
           </div>
         </div>
       </header>
-      <section className="mt-5">
+      <section className="mt-5 bg-dark text-white">
         <div className="container">
+          <div>
+            <h5 className={`text-center mb-5 ${cssClass}`}>{message}</h5>
+          </div>
           <form action="#">
             <div className="row d-flex align-items-center justify-content-center">
+              <div className="col-ms-12  col-md-2">
+                <div className="form-group">
+                  <input
+                    min="1"
+                    value={times}
+                    type="number"
+                    placeholder="0"
+                    className="form-control"
+                    onChange={(e) => {
+                      setTimes(Number(e.target.value));
+                      setInputCurr(Number(e.target.value));
+                    }}
+                  />
+                </div>
+              </div>
               <div className="col-ms-12 col-md-4">
                 <div className="form-group">
                   <select
@@ -67,19 +106,6 @@ function App() {
                       <option>Loading...</option>
                     )}
                   </select>
-                </div>
-              </div>
-              <div className="col-ms-12  col-md-2">
-                <div className="form-group">
-                  <input
-                    min="1"
-                    type="number"
-                    placeholder="0"
-                    className="form-control"
-                    onChange={(e) => {
-                      setTimes(Number(e.target.value));
-                    }}
-                  />
                 </div>
               </div>
               <div className="col-ms-12 col-md-2">
@@ -118,7 +144,10 @@ function App() {
               <div className="col-4 d-flex align-items-center justify-content-center">
                 <button
                   className="btn btn-primary"
-                  onClick={() => convertCurrency()}
+                  onClick={(e) => {
+                    e.defaultPrevented;
+                    convertCurrency();
+                  }}
                 >
                   Convert
                 </button>
